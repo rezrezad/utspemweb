@@ -1,0 +1,41 @@
+services:
+  webkj:
+    build: ./php
+    image: webkj_php:latest
+    container_name: webkj
+    hostname: "webkj"
+    volumes:
+      - ./src:/var/www/html
+      - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+    working_dir: /var/www/html
+    depends_on: 
+      - db_webkj
+  db_webkj:
+    image: mariadb:10.2
+    container_name: dbkj
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/conf.d:/etc/mysql/conf.d:ro
+    environment:
+      MYSQL_USER: djambred
+      MYSQL_PASSWORD: p455w0rd1!.
+      MYSQL_ROOT_PASSWORD: p455w0rd
+      TZ: Asia/Jakarta
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql  
+  nginx_webkj:
+    build: ./nginx
+    image: nginx_webkj:latest
+    container_name: nginx_webkj
+    hostname: "nginx_webkj"
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - webkj
